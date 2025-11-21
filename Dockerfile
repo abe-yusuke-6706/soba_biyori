@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libicu-dev \
     libzip-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd bcmath pdo_mysql mysqli exif intl zip \
+    && docker-php-ext-install gd bcmath pdo_mysql mysqli exif intl zip pdo_pgsql pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -32,4 +33,4 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-CMD ["apache2-foreground"]
+CMD ["sh", "-c", "chown -R www-data:www-data storage bootstrap/cache && apache2-foreground"]
