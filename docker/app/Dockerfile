@@ -1,5 +1,7 @@
 FROM php:8.3-fpm
 
+WORKDIR /var/www/html
+
 RUN apt-get update && apt-get install -y \
     git \
     zip \
@@ -9,17 +11,24 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo-dev \
     libpng-dev \
     libicu-dev \
-    libzip-dev
+    libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd bcmath pdo_mysql mysqli exif intl zip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd \
-    && docker-php-ext-install bcmath pdo_mysql mysqli exif intl zip
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN cd /usr/bin \
-    && curl -s https://getcomposer.org/installer | php \
-    && ln -s /usr/bin/composer.phar /usr/bin/composer
+COPY . .
 
-WORKDIR /var/www/html
+RUN mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/framework/cache \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache
 
-# storage と cache の権限は "実行時" に設定する（ビルド時には意味ない）
-CMD ["sh", "-c", "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && php-fpm"]
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
+
+CMD ["sh", "-c", "chown -R www-data:www-data storage bootstrap/cache && php-fpm"]
