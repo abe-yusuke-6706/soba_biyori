@@ -18,11 +18,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 COPY ./www/laravel/ /var/www/html/
+COPY ./start.sh /var/www/html/start.sh   
 
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod +x /var/www/html/start.sh 
 
 RUN a2enmod rewrite
 
@@ -33,4 +34,4 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-CMD ["sh", "-c", "chown -R www-data:www-data storage bootstrap/cache && apache2-foreground"]
+CMD ["/var/www/html/start.sh"]
