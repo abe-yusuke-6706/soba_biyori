@@ -1,0 +1,47 @@
+services:
+  app:
+    build:
+      context: ./docker/app
+    working_dir: /var/www/html
+    depends_on:
+      - db
+    volumes:
+      - ./www/laravel:/var/www/html
+      - ./docker/app/php.ini:/usr/local/etc/php/php.ini
+
+  node:
+    build:
+      context: ./www/laravel
+      dockerfile: ../../docker/node/Dockerfile
+    tty: true
+    stdin_open: true
+    command: tail -f /dev/null
+    ports:
+      - 5173:5173
+    working_dir: /var/www/html
+    volumes:
+      - ./www/laravel:/var/www/html
+      - /var/www/html/node_modules
+
+  db:
+    image: mysql8-built
+    volumes:
+      - db-store:/var/lib/mysql
+      - ./docker/mysql/initdb/:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3307:3306
+
+  nginx:
+    build:
+      context: ./docker/nginx
+    depends_on:
+      - app
+    ports:
+      - 81:80
+    volumes:
+      - ./www/laravel:/var/www/html
+      - ./docker/nginx/logs:/var/log/nginx
+
+volumes:
+  db-store:
