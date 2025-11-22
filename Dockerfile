@@ -6,7 +6,6 @@ COPY ./www/laravel/package*.json ./
 RUN npm install
 
 COPY ./www/laravel/ ./
-
 RUN npm run build
 
 
@@ -40,8 +39,10 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-RUN php artisan config:cache && \
+CMD ["sh", "-c", "\
+    php artisan migrate --force && \
+    php artisan config:cache && \
     php artisan route:cache && \
-    php artisan view:cache
-
-CMD ["apache2-foreground"]
+    php artisan view:cache && \
+    apache2-foreground \
+"]
