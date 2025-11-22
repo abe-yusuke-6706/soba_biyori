@@ -1,3 +1,15 @@
+FROM node:20 AS node_builder
+
+WORKDIR /app
+
+COPY ./www/laravel/package*.json ./
+RUN npm install
+
+COPY ./www/laravel/ ./
+
+RUN npm run build
+
+
 FROM php:8.3-apache
 
 WORKDIR /var/www/html
@@ -15,16 +27,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY ./www/laravel/ /var/www/html/
 
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+COPY --from=node_builder /app/public/build /var/www/html/public/build
 
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf && \
     sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 RUN a2enmod rewrite
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-dev --optimize-autoloader
 
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
 
 CMD ["apache2-foreground"]
