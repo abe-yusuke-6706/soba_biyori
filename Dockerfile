@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev libzip-dev libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd bcmath pdo_mysql mysqli exif intl zip pdo_pgsql pgsql \
+    && docker-php-ext-enable pdo_pgsql pgsql \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
