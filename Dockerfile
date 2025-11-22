@@ -34,6 +34,7 @@ RUN chown -R www-data:www-data /var/www/html && \
 
 # 🎉 起動時に実行する処理を全てここに統合（start.sh 必要なし）
 CMD bash -c "\
+    cp /etc/secrets/env_file /var/www/html/.env && \
     php artisan key:generate --force && \
     php artisan migrate --force || true && \
     apache2-foreground \
