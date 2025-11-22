@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Comment;
 use App\Models\Image;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -39,7 +40,9 @@ class PostController extends Controller
         $savedPaths = [];
 
         foreach ($images as $file) {
-            $savedPaths[] = $file->store('uploads', 'public');
+            $path = Storage::disk('s3')->putFile('/', $file, 'public');
+            $savedPaths[] = Storage::disk('s3')->url($path);
+            // $savedPaths[] = $file->store('uploads', 'public');
         }
 
         // dd($savedPaths);
