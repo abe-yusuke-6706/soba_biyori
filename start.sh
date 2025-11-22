@@ -1,10 +1,9 @@
-#!/bin/sh
-
-# マイグレーションを実行
-/usr/local/bin/php /var/www/html/artisan migrate --force
-
-# 権限を修正
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
+#!/bin/bash
+# Laravel のキャッシュをクリアして再構築
+php artisan config:clear
+php artisan cache:clear
+php artisan config:cache
+# マイグレーション
+php artisan migrate --force
 # Apache をフォアグラウンドで起動
-exec /usr/local/bin/apache2-foreground
+apache2-foreground
