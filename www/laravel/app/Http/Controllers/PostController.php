@@ -41,6 +41,7 @@ class PostController extends Controller
 
         foreach ($images as $file) {
             $path = Storage::disk('s3')->putFile('/', $file, 'public');
+            dd($path);
             $savedPaths[] = Storage::disk('s3')->url($path);
             // $savedPaths[] = $file->store('uploads', 'public');
         }
