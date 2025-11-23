@@ -6,6 +6,23 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CommentController;
+use Illuminate\Support\Facades\Config;
+
+Route::get('/debug-s3', function () {
+    $config = Config::get('filesystems.disks.s3');
+    
+    return [
+        'AWS_ACCESS_KEY_ID' => $config['key'] ?? 'NULL',
+        'AWS_DEFAULT_REGION' => $config['region'] ?? 'NULL',
+        'AWS_BUCKET' => $config['bucket'] ?? 'NULL',
+        // セキュリティのため、シークレットは先頭3文字だけ表示
+        'AWS_SECRET_ACCESS_KEY' => substr($config['secret'] ?? '', 0, 3) . '...',
+        'All Env Vars' => [
+            'AWS_ACCESS_KEY_ID' => env('AWS_ACCESS_KEY_ID'),
+            'AWS_BUCKET' => env('AWS_BUCKET'),
+        ],
+    ];
+});
 
 Route::get('/home', function () {
     return Inertia::render('Welcome', [
