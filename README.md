@@ -7,7 +7,6 @@
 
 ## 技術構成
 
-### Backend
 * **バックエンド**: Laravel 11
 * **フロントエンド**: React 18 ( Inertia.js, JavaScript )
 * **UIフレームワーク**: Chakra UI v2 / Saas UI v2
